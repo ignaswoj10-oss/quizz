@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="pl">
 <head>
@@ -235,7 +234,7 @@
     <!-- Sekcja Quizu -->
     <div id="quiz-section" class="hidden">
       <div class="progress" id="quiz-progress">Pytanie 1 / 100</div>
-      <div class="pusheen-img" id="quiz-pusheen">🐾💕</div>
+      <div class="pusheen-img">🐾💕</div>
       <div class="quiz-box">
         <div style="text-align: center; font-size: 1.3em;">
           Przetłumacz na angielski:<br>
@@ -243,7 +242,6 @@
         </div>
         <input type="text" id="quiz-input" placeholder="Wpisz po angielsku..." autocomplete="off">
         <div id="quiz-feedback" class="feedback hidden"></div>
-        <button id="quiz-submit-btn" onclick="checkAnswer()">Sprawdź answer 💕</button>
       </div>
     </div>
 
@@ -392,12 +390,12 @@
       { en: "sheet", pl: "prześcieradło" },
       { en: "warn", pl: "ostrzegać" },
       { en: "dress up as", pl: "przebrać się za" },
-      { en: "a little", pl: "trochę / odrobinę / nieco" },
+      { en: "a little ", pl: "trochę / odrobinę / nieco" },
       { en: "badly", pl: "źle" },
       { en: "completely", pl: "zupełnie" },
       { en: "extremely", pl: "niezwykle" },
       { en: "luckily", pl: "na szczęście" },
-      { en: "quite", pl: "całkiem / dość" },
+      { en: "quite ", pl: "całkiem / dość" },
       { en: "really", pl: "naprawdę" },
       { en: "stay up", pl: "nie kłaść się spać" },
       { en: "unbelievably", pl: "niewiarygodnie" },
@@ -523,26 +521,20 @@
       const userInput = normalize(document.getElementById('quiz-input').value);
       const currentWordObj = quizWords[currentQuizIndex];
       const correctAnswer = normalize(currentWordObj.en);
-      const feedback = document.getElementById('quiz-feedback');
 
       if (userInput === correctAnswer) {
         if (!isRetry) {
           score++;
         }
-        feedback.innerText = "Super! Poprawna odpowiedź! 💖🐾";
-        feedback.className = "feedback correct";
-        feedback.classList.remove('hidden');
-
-        // Automatyczne przejście dalej po 400 milisekundach (bardzo szybko)
-        setTimeout(() => {
-          currentQuizIndex++;
-          isRetry = false;
-          if (currentQuizIndex < quizWords.length) {
-            loadQuizQuestion();
-          } else {
-            showResults();
-          }
-        }, 400);
+        
+        // Natychmiastowe przejście do kolejnego pytania
+        currentQuizIndex++;
+        isRetry = false;
+        if (currentQuizIndex < quizWords.length) {
+          loadQuizQuestion();
+        } else {
+          showResults();
+        }
 
       } else {
         isRetry = true;
@@ -550,6 +542,7 @@
           mistakes.push(currentWordObj);
         }
 
+        const feedback = document.getElementById('quiz-feedback');
         feedback.innerHTML = `Oj, błąd! 😿<br>Poprawna pisownia to: <strong>${currentWordObj.en}</strong>.<br>Napisz to poprawnie poniżej, aby przejść dalej!`;
         feedback.className = "feedback incorrect";
         feedback.classList.remove('hidden');

@@ -1,0 +1,552 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Fiszki i Quiz - Pusheen & Serduszka 🐱💖</title>
+  <style>
+    :root {
+      --primary-color: #ff9ebb;
+      --secondary-color: #ffb6c1;
+      --bg-color: #fff0f5;
+      --card-bg: #ffffff;
+      --text-color: #5a4b51;
+      --accent-color: #ff69b4;
+    }
+
+    * {
+      box-sizing: border-box;
+      font-family: 'Comic Sans MS', 'Chalkboard SE', 'Segoe UI', cursive, sans-serif;
+    }
+
+    body {
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      margin: 0;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+    }
+
+    h1 {
+      color: var(--accent-color);
+      text-align: center;
+      margin-bottom: 10px;
+      font-size: 2em;
+    }
+
+    .subtitle {
+      text-align: center;
+      margin-bottom: 20px;
+      font-size: 1.1em;
+    }
+
+    .nav-buttons {
+      display: flex;
+      gap: 15px;
+      margin-bottom: 25px;
+    }
+
+    button {
+      background-color: var(--primary-color);
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 25px;
+      font-size: 1em;
+      font-weight: bold;
+      cursor: pointer;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+      transition: all 0.3s ease;
+    }
+
+    button:hover {
+      background-color: var(--accent-color);
+      transform: translateY(-2px);
+    }
+
+    .container {
+      width: 100%;
+      max-width: 600px;
+      background: var(--card-bg);
+      border-radius: 20px;
+      padding: 25px;
+      box-shadow: 0 8px 16px rgba(255, 182, 193, 0.4);
+      border: 3px solid var(--secondary-color);
+      position: relative;
+    }
+
+    /* Fiszki */
+    .flashcard {
+      height: 220px;
+      perspective: 1000px;
+      cursor: pointer;
+      margin-bottom: 20px;
+    }
+
+    .flashcard-inner {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      text-align: center;
+      transition: transform 0.6s;
+      transform-style: preserve-3d;
+      border-radius: 15px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+      background: #fff6f8;
+      border: 2px dashed var(--primary-color);
+    }
+
+    .flashcard.flipped .flashcard-inner {
+      transform: rotateY(180deg);
+    }
+
+    .flashcard-front, .flashcard-back {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      backface-visibility: hidden;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+      border-radius: 15px;
+    }
+
+    .flashcard-front {
+      color: var(--accent-color);
+    }
+
+    .flashcard-back {
+      color: #4a4a4a;
+      transform: rotateY(180deg);
+      background-color: #ffe6ed;
+    }
+
+    .word-title {
+      font-size: 1.6em;
+      font-weight: bold;
+      margin-bottom: 10px;
+    }
+
+    .hint-text {
+      font-size: 0.85em;
+      color: #aaa;
+    }
+
+    .controls {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    /* Quiz */
+    .quiz-box {
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+    }
+
+    input[type="text"] {
+      width: 100%;
+      padding: 12px 20px;
+      border: 2px solid var(--secondary-color);
+      border-radius: 20px;
+      font-size: 1.1em;
+      outline: none;
+      text-align: center;
+    }
+
+    input[type="text"]:focus {
+      border-color: var(--accent-color);
+    }
+
+    .feedback {
+      padding: 12px;
+      border-radius: 15px;
+      text-align: center;
+      font-weight: bold;
+    }
+
+    .feedback.correct {
+      background-color: #d4edda;
+      color: #155724;
+    }
+
+    .feedback.incorrect {
+      background-color: #f8d7da;
+      color: #721c24;
+    }
+
+    .progress {
+      text-align: center;
+      font-weight: bold;
+      color: var(--accent-color);
+    }
+
+    .pusheen-img {
+      text-align: center;
+      font-size: 2.5em;
+      margin: 10px 0;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>🐾 Pusheen's English Corner 💖</h1>
+  <div class="subtitle">Nauka słówek z kotkiem Pusheenem! ✨</div>
+
+  <div class="nav-buttons">
+    <button onclick="showSection('flashcards')">🃏 Fiszki</button>
+    <button onclick="startQuiz()">✍️ Quiz</button>
+  </div>
+
+  <div class="container">
+    <!-- Sekcja Fiszek -->
+    <div id="flashcards-section">
+      <div class="progress" id="fc-progress">1 / 100</div>
+      <div class="pusheen-img">🐱💖</div>
+      <div class="flashcard" onclick="flipCard(this)">
+        <div class="flashcard-inner">
+          <div class="flashcard-front">
+            <div class="word-title" id="fc-english">basement</div>
+            <div class="hint-text">(kliknij, aby zobaczyć tłumaczenie)</div>
+          </div>
+          <div class="flashcard-back">
+            <div class="word-title" id="fc-polish">piwnica</div>
+          </div>
+        </div>
+      </div>
+      <div class="controls">
+        <button onclick="prevCard()">⬅️ Poprzednia</button>
+        <button onclick="nextCard()">Następna ➡️</button>
+      </div>
+    </div>
+
+    <!-- Sekcja Quizu -->
+    <div id="quiz-section" class="hidden">
+      <div class="progress" id="quiz-progress">Pytanie 1 / 100</div>
+      <div class="pusheen-img" id="quiz-pusheen">🐾💕</div>
+      <div class="quiz-box">
+        <div style="text-align: center; font-size: 1.3em;">
+          Przetłumacz na angielski:<br>
+          <strong id="quiz-polish-word" style="color: var(--accent-color); font-size: 1.4em;"></strong>
+        </div>
+        <input type="text" id="quiz-input" placeholder="Wpisz po angielsku..." autocomplete="off">
+        <div id="quiz-feedback" class="feedback hidden"></div>
+        <button id="quiz-submit-btn" onclick="checkAnswer()">Sprawdź answer 💕</button>
+      </div>
+    </div>
+
+    <!-- Sekcja Wyników -->
+    <div id="result-section" class="hidden" style="text-align: center;">
+      <h2>🎉 Koniec Quizu! 🎉</h2>
+      <div class="pusheen-img">😻🏆💖</div>
+      <p style="font-size: 1.3em;">Twój wynik: <strong id="final-score" style="color: var(--accent-color);"></strong></p>
+      <button onclick="startQuiz()">🔄 Zagraj ponownie (losowe słówka)</button>
+    </div>
+  </div>
+
+  <script>
+    const vocabulary = [
+      { en: "basement", pl: "piwnica" },
+      { en: "bedside table", pl: "stolik nocny" },
+      { en: "block of flats", pl: "blok mieszkalny" },
+      { en: "bookcase", pl: "regał na książki" },
+      { en: "brick", pl: "cegła" },
+      { en: "bungalow", pl: "dom parterowy" },
+      { en: "carpet", pl: "dywan" },
+      { en: "chest of drawers", pl: "komoda" },
+      { en: "comfortable", pl: "wygodny" },
+      { en: "concrete", pl: "beton" },
+      { en: "cooker", pl: "kuchenka" },
+      { en: "cosy", pl: "przytulny" },
+      { en: "cottage", pl: "domek wiejski" },
+      { en: "cupboard", pl: "szafka" },
+      { en: "desk", pl: "biurko" },
+      { en: "detached house", pl: "dom wolnostojący" },
+      { en: "do the cooking", pl: "gotować" },
+      { en: "do the gardening", pl: "pracować w ogrodzie" },
+      { en: "do the housework", pl: "wykonywać prace domowe" },
+      { en: "do the ironing", pl: "prasować" },
+      { en: "do the shopping", pl: "robić zakupy" },
+      { en: "do the washing", pl: "prać" },
+      { en: "do the washing-up", pl: "zmywać" },
+      { en: "do your homework", pl: "odrabiać zadanie domowe" },
+      { en: "downstairs", pl: "na dole" },
+      { en: "fridge", pl: "lodówka" },
+      { en: "front door", pl: "drzwi frontowe" },
+      { en: "glass", pl: "szkło" },
+      { en: "in a village", pl: "w wiosce" },
+      { en: "in the city centre", pl: "w centrum miasta" },
+      { en: "in the countryside", pl: "na wsi" },
+      { en: "in the suburbs", pl: "na przedmieściach" },
+      { en: "interior wall", pl: "ścianka działowa" },
+      { en: "kitchen sink", pl: "zlew kuchenny" },
+      { en: "ladder", pl: "drabina" },
+      { en: "make a complaint", pl: "złożyć zażalenie" },
+      { en: "make a decision", pl: "podjąć decyzję" },
+      { en: "make a mess", pl: "zrobić bałagan" },
+      { en: "make a noise", pl: "hałasować" },
+      { en: "make dinner", pl: "ugotować obiad" },
+      { en: "make your bed", pl: "pościelić łóżko" },
+      { en: "metal", pl: "metal" },
+      { en: "modern", pl: "nowoczesny" },
+      { en: "narrow", pl: "wąski" },
+      { en: "natural light", pl: "naturalne światło" },
+      { en: "near the sea", pl: "blisko morza" },
+      { en: "neighbour", pl: "sąsiad" },
+      { en: "on a housing estate", pl: "na osiedlu" },
+      { en: "on the edge of the city", pl: "na obrzeżach miasta" },
+      { en: "on the first floor", pl: "na pierwszym piętrze" },
+      { en: "on the ground floor", pl: "na parterze" },
+      { en: "on the second floor", pl: "na drugim piętrze" },
+      { en: "on the top floor", pl: "na najwyższym piętrze" },
+      { en: "open-plan", pl: "bez ścianek działowych" },
+      { en: "radiator", pl: "kaloryfer" },
+      { en: "semi-detached house", pl: "dom bliźniaczy / bliźniak" },
+      { en: "shelf", pl: "półka" },
+      { en: "spacious", pl: "przestronny" },
+      { en: "stairs", pl: "schody" },
+      { en: "stone", pl: "kamień" },
+      { en: "terraced house", pl: "dom szeregowy" },
+      { en: "traditional", pl: "tradycyjny" },
+      { en: "upstairs", pl: "na piętrze" },
+      { en: "wardrobe", pl: "szafa na ubrania" },
+      { en: "wide", pl: "szeroki" },
+      { en: "wood", pl: "drewno" },
+      { en: "wooden floor", pl: "drewniana podłoga" },
+      { en: "accommodation", pl: "zakwaterowanie" },
+      { en: "community", pl: "społeczność" },
+      { en: "couch", pl: "kanapa" },
+      { en: "feel at home", pl: "czuć się jak w domu" },
+      { en: "feel homesick", pl: "tęsknić za domem" },
+      { en: "free", pl: "darmowy / bezpłatny" },
+      { en: "host", pl: "gospodarz" },
+      { en: "houseboat", pl: "łódź mieszkalna" },
+      { en: "luxury", pl: "luksusowy" },
+      { en: "member", pl: "członek" },
+      { en: "neighbourhood", pl: "okolica" },
+      { en: "studio apartment", pl: "kawalerka" },
+      { en: "come round", pl: "przyjść w odwiedziny" },
+      { en: "get away from", pl: "uciec od" },
+      { en: "keep sb out", pl: "nie wpuszczać kogoś" },
+      { en: "lamp", pl: "lampa" },
+      { en: "let sb in", pl: "wpuścić kogoś" },
+      { en: "shell", pl: "muszla" },
+      { en: "show sb around", pl: "oprowadzać kogoś" },
+      { en: "souvenir", pl: "pamiątka" },
+      { en: "stay in", pl: "zostać w domu" },
+      { en: "abandon", pl: "porzucać" },
+      { en: "ancient", pl: "starożytny" },
+      { en: "attract", pl: "przyciągać" },
+      { en: "breathtaking view", pl: "zapierający dech w piersiach widok" },
+      { en: "busy", pl: "ruchliwy / zatłoczony" },
+      { en: "camel", pl: "wielbłąd" },
+      { en: "cave", pl: "jaskinia" },
+      { en: "crater", pl: "krater" },
+      { en: "dense", pl: "gęsty" },
+      { en: "desert", pl: "pustynia" },
+      { en: "develop underwater vision", pl: "wykształcić umiejętność widzenia pod wodą" },
+      { en: "dry", pl: "suchy" },
+      { en: "electricity", pl: "energia elektryczna" },
+      { en: "historic monument", pl: "zabytek" },
+      { en: "hot springs", pl: "gorące źródła" },
+      { en: "humid", pl: "wilgotny" },
+      { en: "impressive", pl: "robiący wrażenie" },
+      { en: "island", pl: "wyspa" },
+      { en: "landscape", pl: "krajobraz" },
+      { en: "lush", pl: "bujny" },
+      { en: "mining", pl: "górnictwo" },
+      { en: "mountain", pl: "góra" },
+      { en: "move (house)", pl: "przeprowadzić się" },
+      { en: "nomadic tribe", pl: "plemię koczownicze" },
+      { en: "population", pl: "liczba ludności" },
+      { en: "rainforest", pl: "las deszczowy" },
+      { en: "rock", pl: "skała" },
+      { en: "ruins", pl: "ruiny" },
+      { en: "scorching", pl: "skwarny / upalny" },
+      { en: "stilt", pl: "pal" },
+      { en: "tourist destination", pl: "cel wycieczek turystycznych" },
+      { en: "trading centre", pl: "centrum handlu" },
+      { en: "traffic jam", pl: "korek uliczny" },
+      { en: "treehouse", pl: "domek na drzewie" },
+      { en: "turquoise ocean", pl: "turkusowy ocean" },
+      { en: "vegetation", pl: "roślinność" },
+      { en: "volcanic", pl: "wulkaniczny" },
+      { en: "volcano", pl: "wulkan" },
+      { en: "ceiling", pl: "sufit" },
+      { en: "house-warming party", pl: "parapetówka" },
+      { en: "sheet", pl: "prześcieradło" },
+      { en: "warn", pl: "ostrzegać" },
+      { en: "dress up as", pl: "przebrać się za" },
+      { en: "a little / a bit / slightly", pl: "trochę / odrobinę / nieco" },
+      { en: "badly", pl: "źle" },
+      { en: "completely", pl: "zupełnie" },
+      { en: "extremely", pl: "niezwykle" },
+      { en: "luckily", pl: "na szczęście" },
+      { en: "quite / rather / pretty", pl: "całkiem / dość" },
+      { en: "really", pl: "naprawdę" },
+      { en: "stay up", pl: "nie kłaść się spać" },
+      { en: "unbelievably", pl: "niewiarygodnie" },
+      { en: "well", pl: "dobrze" },
+      { en: "a must", pl: "rzecz obowiązkowa / konieczność" },
+      { en: "according to", pl: "według" },
+      { en: "architecture", pl: "architektura" },
+      { en: "attraction", pl: "atrakcja" },
+      { en: "be famous for", pl: "być znanym z" },
+      { en: "delicious", pl: "pyszny / wyśmienity" },
+      { en: "entertainment", pl: "rozrywka" },
+      { en: "historic site", pl: "zabytek" },
+      { en: "local speciality", pl: "miejscowa specjalność" },
+      { en: "lovely", pl: "uroczy / cudowny / śliczny" },
+      { en: "nightlife", pl: "życie nocne" },
+      { en: "on foot", pl: "pieszo" },
+      { en: "recommend", pl: "polecać" },
+      { en: "selection of", pl: "wybór" },
+      { en: "tend to", pl: "mieć w zwyczaju" },
+      { en: "tourist highlight", pl: "główna atrakcja turystyczna" },
+      { en: "wonderful", pl: "cudowny" },
+      { en: "adult", pl: "dorosły" },
+      { en: "castle", pl: "zamek" },
+      { en: "daily", pl: "codziennie / dziennie" },
+      { en: "hill", pl: "wzgórze" },
+      { en: "river", pl: "rzeka" },
+      { en: "royal family", pl: "rodzina królewska" },
+      { en: "suitable", pl: "odpowiedni" },
+      { en: "waterfront restaurant", pl: "restauracja nadbrzeżna / restauracja z widokiem na wodę" },
+      { en: "I'm beautiful", pl: "jestem piękna" }
+    ];
+
+    let currentCardIndex = 0;
+    let quizWords = [];
+    let currentQuizIndex = 0;
+    let score = 0;
+    let isRetry = false;
+
+    // Obsługa Fiszek
+    function updateCard() {
+      const card = document.querySelector('.flashcard');
+      card.classList.remove('flipped');
+      setTimeout(() => {
+        document.getElementById('fc-english').innerText = vocabulary[currentCardIndex].en;
+        document.getElementById('fc-polish').innerText = vocabulary[currentCardIndex].pl;
+        document.getElementById('fc-progress').innerText = `${currentCardIndex + 1} / ${vocabulary.length}`;
+      }, 150);
+    }
+
+    function flipCard(card) {
+      card.classList.toggle('flipped');
+    }
+
+    function nextCard() {
+      currentCardIndex = (currentCardIndex + 1) % vocabulary.length;
+      updateCard();
+    }
+
+    function prevCard() {
+      currentCardIndex = (currentCardIndex - 1 + vocabulary.length) % vocabulary.length;
+      updateCard();
+    }
+
+    // Obsługa przełączania widoków
+    function showSection(section) {
+      document.getElementById('flashcards-section').classList.add('hidden');
+      document.getElementById('quiz-section').classList.add('hidden');
+      document.getElementById('result-section').classList.add('hidden');
+
+      if (section === 'flashcards') {
+        document.getElementById('flashcards-section').classList.remove('hidden');
+      }
+    }
+
+    // Obsługa Quizu
+    function shuffle(array) {
+      return array.sort(() => Math.random() - 0.5);
+    }
+
+    function startQuiz() {
+      quizWords = shuffle([...vocabulary]);
+      currentQuizIndex = 0;
+      score = 0;
+      isRetry = false;
+
+      showSection('quiz');
+      document.getElementById('quiz-section').classList.remove('hidden');
+      loadQuizQuestion();
+    }
+
+    function loadQuizQuestion() {
+      const current = quizWords[currentQuizIndex];
+      document.getElementById('quiz-progress').innerText = `Pytanie ${currentQuizIndex + 1} / ${quizWords.length}`;
+      document.getElementById('quiz-polish-word').innerText = current.pl;
+      document.getElementById('quiz-input').value = '';
+      
+      const feedback = document.getElementById('quiz-feedback');
+      feedback.classList.add('hidden');
+      feedback.className = 'feedback hidden';
+
+      document.getElementById('quiz-input').focus();
+    }
+
+    function normalize(str) {
+      return str.trim().toLowerCase().replace(/\s+/g, ' ');
+    }
+
+    function checkAnswer() {
+      const userInput = normalize(document.getElementById('quiz-input').value);
+      const correctAnswer = normalize(quizWords[currentQuizIndex].en);
+      const feedback = document.getElementById('quiz-feedback');
+
+      if (userInput === correctAnswer) {
+        if (!isRetry) {
+          score++;
+        }
+        feedback.innerText = "Super! Poprawna odpowiedź! 💖🐾";
+        feedback.className = "feedback correct";
+        feedback.classList.remove('hidden');
+
+        setTimeout(() => {
+          currentQuizIndex++;
+          isRetry = false;
+          if (currentQuizIndex < quizWords.length) {
+            loadQuizQuestion();
+          } else {
+            showResults();
+          }
+        }, 1000);
+      } else {
+        isRetry = true;
+        feedback.innerHTML = `Oj, błąd! 😿<br>Poprawna pisownia to: <strong>${quizWords[currentQuizIndex].en}</strong>.<br>Napisz to poprawnie poniżej, aby przejść dalej!`;
+        feedback.className = "feedback incorrect";
+        feedback.classList.remove('hidden');
+        document.getElementById('quiz-input').value = '';
+        document.getElementById('quiz-input').focus();
+      }
+    }
+
+    function showResults() {
+      document.getElementById('quiz-section').classList.add('hidden');
+      document.getElementById('result-section').classList.remove('hidden');
+      document.getElementById('final-score').innerText = `${score} / ${quizWords.length} punktów!`;
+    }
+
+    // Obsługa klawisza Enter w quizie
+    document.getElementById('quiz-input').addEventListener('keypress', function (e) {
+      if (e.key === 'Enter') {
+        checkAnswer();
+      }
+    });
+
+    // Inicjalizacja pierwszej fiszki
+    updateCard();
+  </script>
+</body>
+</html>

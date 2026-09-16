@@ -60,6 +60,7 @@
       cursor: pointer;
       box-shadow: 0 4px 8px rgba(0,0,0,0.1);
       transition: all 0.3s ease;
+      margin-top: 5px;
     }
 
     button:hover {
@@ -250,7 +251,10 @@
       <h2>🎉 Koniec Quizu! 🎉</h2>
       <div class="pusheen-img">😻🏆💖</div>
       <p style="font-size: 1.3em;">Twój wynik: <strong id="final-score" style="color: var(--accent-color);"></strong></p>
-      <button onclick="startQuiz()">🔄 Zagraj ponownie (losowe słówka)</button>
+      <div style="display: flex; flex-direction: column; gap: 10px; align-items: center; margin-top: 15px;">
+        <button onclick="startQuiz()">🔄 Zagraj ponownie (losowe słówka)</button>
+        <button id="retry-mistakes-btn" class="hidden" onclick="startRetryQuiz()" style="background-color: #ff69b4;">🔄 Ćwicz tylko błędne słówka (<span id="mistakes-count">0</span>)</button>
+      </div>
     </div>
   </div>
 
@@ -387,12 +391,12 @@
       { en: "sheet", pl: "prześcieradło" },
       { en: "warn", pl: "ostrzegać" },
       { en: "dress up as", pl: "przebrać się za" },
-      { en: "a little / a bit / slightly", pl: "trochę / odrobinę / nieco" },
+      { en: "a little ", pl: "trochę / odrobinę / nieco" },
       { en: "badly", pl: "źle" },
       { en: "completely", pl: "zupełnie" },
       { en: "extremely", pl: "niezwykle" },
       { en: "luckily", pl: "na szczęście" },
-      { en: "quite / rather / pretty", pl: "całkiem / dość" },
+      { en: "quite ", pl: "całkiem / dość" },
       { en: "really", pl: "naprawdę" },
       { en: "stay up", pl: "nie kłaść się spać" },
       { en: "unbelievably", pl: "niewiarygodnie" },
@@ -430,6 +434,7 @@
     let currentQuizIndex = 0;
     let score = 0;
     let isRetry = false;
+    let mistakes = [];
 
     // Obsługa Fiszek
     function updateCard() {
@@ -474,6 +479,20 @@
 
     function startQuiz() {
       quizWords = shuffle([...vocabulary]);
+      mistakes = [];
+      currentQuizIndex = 0;
+      score = 0;
+      isRetry = false;
+
+      showSection('quiz');
+      document.getElementById('quiz-section').classList.remove('hidden');
+      loadQuizQuestion();
+    }
+
+    function startRetryQuiz() {
+      if (mistakes.length === 0) return;
+      quizWords = shuffle([...mistakes]);
+      mistakes = [];
       currentQuizIndex = 0;
       score = 0;
       isRetry = false;
@@ -502,7 +521,8 @@
 
     function checkAnswer() {
       const userInput = normalize(document.getElementById('quiz-input').value);
-      const correctAnswer = normalize(quizWords[currentQuizIndex].en);
+      const currentWordObj = quizWords[currentQuizIndex];
+      const correctAnswer = normalize(currentWordObj.en);
       const feedback = document.getElementById('quiz-feedback');
 
       if (userInput === correctAnswer) {
@@ -513,6 +533,7 @@
         feedback.className = "feedback correct";
         feedback.classList.remove('hidden');
 
+        // Automatyczne przejście dalej po 400 milisekundach (bardzo szybko)
         setTimeout(() => {
           currentQuizIndex++;
           isRetry = false;
@@ -521,10 +542,15 @@
           } else {
             showResults();
           }
-        }, 1000);
+        }, 400);
+
       } else {
         isRetry = true;
-        feedback.innerHTML = `Oj, błąd! 😿<br>Poprawna pisownia to: <strong>${quizWords[currentQuizIndex].en}</strong>.<br>Napisz to poprawnie poniżej, aby przejść dalej!`;
+        if (!mistakes.some(m => m.en === currentWordObj.en)) {
+          mistakes.push(currentWordObj);
+        }
+
+        feedback.innerHTML = `Oj, błąd! 😿<br>Poprawna pisownia to: <strong>${currentWordObj.en}</strong>.<br>Napisz to poprawnie poniżej, aby przejść dalej!`;
         feedback.className = "feedback incorrect";
         feedback.classList.remove('hidden');
         document.getElementById('quiz-input').value = '';
@@ -536,6 +562,16 @@
       document.getElementById('quiz-section').classList.add('hidden');
       document.getElementById('result-section').classList.remove('hidden');
       document.getElementById('final-score').innerText = `${score} / ${quizWords.length} punktów!`;
+
+      const retryBtn = document.getElementById('retry-mistakes-btn');
+      const mistakesCountSpan = document.getElementById('mistakes-count');
+
+      if (mistakes.length > 0) {
+        mistakesCountSpan.innerText = mistakes.length;
+        retryBtn.classList.remove('hidden');
+      } else {
+        retryBtn.classList.add('hidden');
+      }
     }
 
     // Obsługa klawisza Enter w quizie
